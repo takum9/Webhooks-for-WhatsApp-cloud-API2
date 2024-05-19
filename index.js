@@ -7,17 +7,9 @@ const app = express().use(body_parser.json());
 
 const token = process.env.TOKEN;
 const mytoken = process.env.MYTOKEN; // prasath_token
-let specificWord = ''; // Variable to store the specific word
 
 app.listen(process.env.PORT, () => {
     console.log("webhook is listening");
-});
-
-// Endpoint to receive specific word input
-app.post("/set-word", (req, res) => {
-    specificWord = req.body.word;
-    console.log(`Specific word set to: ${specificWord}`);
-    res.status(200).send(`Specific word set to: ${specificWord}`);
 });
 
 // to verify the callback url from dashboard side - cloud api side
@@ -54,26 +46,8 @@ app.post("/webhook", (req, res) => {
             console.log("from " + from);
             console.log("body param " + msg_body);
 
-            // Check for the specific word
-            if (specificWord && msg_body.includes(specificWord)) {
-                // Notify you that the specific word has been found
-                notifyYou(from, specificWord);
-            }
-
-            axios({
-                method: "POST",
-                url: `https://graph.facebook.com/v13.0/${phon_no_id}/messages?access_token=${token}`,
-                data: {
-                    messaging_product: "whatsapp",
-                    to: from,
-                    text: {
-                        body: `Hi.. I'm Nachum, your message is ${msg_body}`
-                    }
-                },
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+            // Send a reply to every message
+            sendReplyMessage(phon_no_id, from, msg_body);
 
             res.sendStatus(200);
         } else {
@@ -82,21 +56,26 @@ app.post("/webhook", (req, res) => {
     }
 });
 
-// Function to notify you that the specific word has been found
-const notifyYou = async (from, word) => {
-    const notificationMessage = `The word "${word}" was found in a message.`;
+// Function to send a reply message
+const sendReplyMessage = async (phon_no_id, from, msg_body) => {
     try {
-        await axios.post('YOUR_NOTIFICATION_ENDPOINT', {  // Replace with your actual notification endpoint
-            message: notificationMessage,
-            from: from
-        }, {
+        await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v13.0/${phon_no_id}/messages?access_token=${token}`,
+            data: {
+                messaging_product: "whatsapp",
+                to: from,
+                text: {
+                    body: `Hi.. I'm Nachum, your message is ${msg_body}`
+                }
+            },
             headers: {
                 "Content-Type": "application/json"
             }
         });
-        console.log('Notification sent.');
+        console.log('Reply sent.');
     } catch (error) {
-        console.error('Error sending notification:', error);
+        console.error('Error sending reply:', error);
     }
 };
 
