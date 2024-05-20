@@ -66,7 +66,7 @@ const sendReplyMessage = async (phon_no_id, from, msg_body) => {
                 messaging_product: "whatsapp",
                 to: from,
                 text: {
-                    body: `Hi.. I'm Nachum, your message is ${msg_body}`
+                    body: `Hi.. I'm Nachum, your message is ${msg_body}. Phone number ID: ${phon_no_id}, From: ${from}`
                 }
             },
             headers: {
